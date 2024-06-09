@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Адміни</title>
+  <link rel="stylesheet" href="/src/assets/css/admin_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="fixed-header">
+    <button class="nav-button" onclick="location.href='admin.html'">Повернутися</button>
+    <button class="add-button" onclick="resetForm(); showForm('adminForm')">Додати</button>
+  </div>
+  <div class="container">
+    <div class="search-sort-container">
+      <input type="text" id="searchInput" placeholder="Пошук..." oninput="filterTable()">
+      <select id="sortSelect" onchange="sortTable()">
+        <option value="id">Сортувати за ID</option>
+        <option value="userId">Сортувати за User ID</option>
+      </select>
+    </div>
+    <div class="form-container" id="adminForm">
+      <h2>Add/Edit Admin</h2>
+      <input type="hidden" id="adminId">
+      <input type="number" id="adminUserId" placeholder="User ID">
+      <button onclick="submitAdmin()">Надіслати</button>
+      <button class="cancel-button" onclick="hideForm('adminForm')">Скасувати</button>
+    </div>
+    <div class="table-container">
+      <table id="adminsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let adminsData = [];
+
+    document.addEventListener('DOMContentLoaded', loadAdmins);
+
+    function loadAdmins() {
+      fetch('/src/scripts/admins.js/api/admins')
+        .then(response => response.json())
+        .then(data => {
+          adminsData = data;
+          renderTable(adminsData);
+        })
+        .catch(error => console.error('Error loading admins:', error));
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector('#adminsTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(admin => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${admin.id}</td>
+          <td>${admin.id_users}</td>
+          <td class="actions">
+            <button onclick="editAdmin(${admin.id})">Edit</button>
+            <button onclick="deleteAdmin(${admin.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const filteredData = adminsData.filter(admin => 
+        admin.id.toString().includes(searchInput) ||
+        admin.id_users.toString().includes(searchInput)
+      );
+      renderTable(filteredData);
+    }
+
+    function sortTable() {
+      const sortSelect = document.getElementById('sortSelect').value;
+      const sortedData = [...adminsData].sort((a, b) => {
+        if (sortSelect === 'id') {
+          return a.id - b.id;
+        } else if (sortSelect === 'userId') {
+          return a.id_users - b.id_users;
+        }
+      });
+      renderTable(sortedData);
+    }
+
+    function showForm(formId) {
+      document.getElementById(formId).style.display = 'flex';
+      window.scrollTo(0, 0);
+    }
+
+    function hideForm(formId) {
+      document.getElementById(formId).style.display = 'none';
+    }
+
+    function resetForm() {
+      document.getElementById('adminId').value = '';
+      document.getElementById('adminUserId').value = '';
+    }
+
+    function submitAdmin() {
+      const id = document.getElementById('adminId').value;
+      const id_users = document.getElementById('adminUserId').value;
+
+      const payload = { id_users };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/src/scripts/admins.js/api/admins/${id}` : '/src/scripts/admins.js/api/admins';
+
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(() => {
+          loadAdmins();
+          hideForm('adminForm');
+        })
+        .catch(error => console.error('Error submitting admin:', error));
+    }
+
+    function editAdmin(id) {
+      fetch(`/src/scripts/admins.js/api/admins/${id}`)
+        .then(response => response.json())
+        .then(data => {
+          fillFormWithData(data);
+          showForm('adminForm');
+        })
+        .catch(error => console.error('Error editing admin:', error));
+    }
+
+    function fillFormWithData(data) {
+      document.getElementById('adminId').value = data.id;
+      document.getElementById('adminUserId').value = data.id_users;
+    }
+
+    function deleteAdmin(id) {
+      if (confirm('Are you sure you want to delete this admin?')) {
+        fetch(`/src/scripts/admins.js/api/admins/${id}`, { method: 'DELETE' })
+          .then(() => loadAdmins())
+          .catch(error => console.error('Error deleting admin:', error));
+      }
+    }
+  </script>
+</body>
+</html>

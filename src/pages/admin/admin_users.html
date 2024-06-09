@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Користувачі</title>
+  <link rel="stylesheet" href="/src/assets/css/admin_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="fixed-header">
+    <button class="nav-button" onclick="location.href='admin.html'">Повернутися</button>
+    <button class="add-button" onclick="showForm('userForm')">Додати</button>
+  </div>
+  <div class="container">
+    <div class="search-sort-container">
+      <input type="text" id="searchInput" placeholder="Пошук..." oninput="filterTable()">
+      <select id="sortSelect" onchange="sortTable()">
+        <option value="id">Сортувати за ID</option>
+        <option value="name">Сортувати за ім'ям</option>
+        <option value="rating">Сортувати за рейтингом</option>
+        <option value="level">Сортувати за рівнем</option>
+        <option value="xp">Сортувати за XP</option>
+        <option value="money">Сортувати за грошима</option>
+        <option value="number_responses">Сортувати за кількістю відповідей</option>
+      </select>
+    </div>
+    <div class="form-container" id="userForm">
+      <h2>Add/Edit User</h2>
+      <input type="hidden" id="userId">
+      <input type="text" id="userName" placeholder="Name">
+      <input type="password" id="userPassword" placeholder="Password">
+      <input type="number" id="userRating" placeholder="Rating">
+      <input type="number" id="userLevel" placeholder="Level">
+      <input type="number" id="userXp" placeholder="XP">
+      <input type="text" id="userIcon" placeholder="Icon">
+      <input type="text" id="userBackground" placeholder="Background">
+      <input type="number" id="userMoney" placeholder="Money">
+      <input type="number" id="userResponses" placeholder="Number of Responses">
+      <button onclick="submitUser()">Надіслати</button>
+      <button class="cancel-button" onclick="hideForm('userForm')">Скасувати</button>
+    </div>
+    <div class="table-container">
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Level</th>
+            <th>XP</th>
+            <th>Icon</th>
+            <th>Background</th>
+            <th>Money</th>
+            <th>Number of Responses</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let usersData = [];
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+
+    function loadUsers() {
+      fetch('/src/scripts/admins.js/api/users')
+        .then(response => response.json())
+        .then(data => {
+          usersData = data;
+          renderTable(usersData);
+        })
+        .catch(error => console.error('Error loading users:', error));
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.name}</td>
+          <td>${user.rating}</td>
+          <td>${user.level}</td>
+          <td>${user.xp}</td>
+          <td>${user.icon}</td>
+          <td>${user.background}</td>
+          <td>${user.money}</td>
+          <td>${user.number_responses}</td>
+          <td class="actions">
+            <button onclick="editUser(${user.id})">Edit</button>
+            <button onclick="deleteUser(${user.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const filteredData = usersData.filter(user => 
+        user.id.toString().includes(searchInput) ||
+        user.name.toLowerCase().includes(searchInput) ||
+        user.rating.toString().includes(searchInput) ||
+        user.level.toString().includes(searchInput) ||
+        user.xp.toString().includes(searchInput) ||
+        user.icon.toLowerCase().includes(searchInput) ||
+        user.background.toLowerCase().includes(searchInput) ||
+        user.money.toString().includes(searchInput) ||
+        user.number_responses.toString().includes(searchInput)
+      );
+      renderTable(filteredData);
+    }
+
+    function sortTable() {
+      const sortSelect = document.getElementById('sortSelect').value;
+      const sortedData = [...usersData].sort((a, b) => {
+        if (sortSelect === 'id') {
+          return a.id - b.id;
+        } else if (sortSelect === 'name') {
+          return a.name.localeCompare(b.name);
+        } else if (sortSelect === 'rating') {
+          return a.rating - b.rating;
+        } else if (sortSelect === 'level') {
+          return a.level - b.level;
+        } else if (sortSelect === 'xp') {
+          return a.xp - b.xp;
+        } else if (sortSelect === 'money') {
+          return a.money - b.money;
+        } else if (sortSelect === 'number_responses') {
+          return a.number_responses - b.number_responses;
+        }
+      });
+      renderTable(sortedData);
+    }
+
+    function showForm(formId) {
+      document.getElementById(formId).style.display = 'flex';
+      window.scrollTo(0, 0);
+    }
+
+    function hideForm(formId) {
+      document.getElementById(formId).style.display = 'none';
+      resetFormFields();
+    }
+
+    function submitUser() {
+      const id = document.getElementById('userId').value;
+      const name = document.getElementById('userName').value;
+      const password = document.getElementById('userPassword').value;
+      const rating = document.getElementById('userRating').value;
+      const level = document.getElementById('userLevel').value;
+      const xp = document.getElementById('userXp').value;
+      const icon = document.getElementById('userIcon').value;
+      const background = document.getElementById('userBackground').value;
+      const money = document.getElementById('userMoney').value;
+      const number_responses = document.getElementById('userResponses').value;
+
+      const payload = { name, password, rating, level, xp, icon, background, money, number_responses };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/src/scripts/admins.js/api/users/${id}` : '/src/scripts/admins.js/api/users';
+
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(() => {
+          loadUsers();
+          hideForm('userForm');
+          resetFormFields();
+        })
+        .catch(error => console.error('Error submitting user:', error));
+    }
+
+    function editUser(id) {
+      fetch(`/src/scripts/admins.js/api/users/${id}`)
+        .then(response => response.json())
+        .then(data => {
+          fillFormWithData(data);
+          showForm('userForm');
+        })
+        .catch(error => console.error('Error editing user:', error));
+    }
+
+    function fillFormWithData(data) {
+      document.getElementById('userId').value = data.id;
+      document.getElementById('userName').value = data.name;
+      document.getElementById('userPassword').value = data.password;
+      document.getElementById('userRating').value = data.rating;
+      document.getElementById('userLevel').value = data.level;
+      document.getElementById('userXp').value = data.xp;
+      document.getElementById('userIcon').value = data.icon;
+      document.getElementById('userBackground').value = data.background;
+      document.getElementById('userMoney').value = data.money;
+      document.getElementById('userResponses').value = data.number_responses;
+    }
+
+    function deleteUser(id) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        fetch(`/src/scripts/admins.js/api/users/${id}`, { method: 'DELETE' })
+          .then(() => loadUsers())
+          .catch(error => console.error('Error deleting user:', error));
+      }
+    }
+
+    function resetFormFields() {
+      document.getElementById('userId').value = '';
+      document.getElementById('userName').value = '';
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userRating').value = '';
+      document.getElementById('userLevel').value = '';
+      document.getElementById('userXp').value = '';
+      document.getElementById('userIcon').value = '';
+      document.getElementById('userBackground').value = '';
+      document.getElementById('userMoney').value = '';
+      document.getElementById('userResponses').value = '';
+    }
+  </script>
+</body>
+</html>

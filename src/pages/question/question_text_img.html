@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Гра</title>
+  <link rel="stylesheet" href="/src/assets/css/question_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="container">
+    <div class="question-text" id="questionText">
+      <img id="questionImage" src="" alt="Question Image">
+    </div>
+    <textarea class="answer-input" id="answerInput" rows="4" placeholder="Введіть вашу відповідь"></textarea>
+    <button class="submit-button" onclick="submitAnswer()">Надіслати відповідь</button>
+    <button class="back-button" onclick="goBack()">Назад</button>
+  </div>
+
+  <script>
+    let startTime;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const questionId = localStorage.getItem('questionId');
+      fetch('/src/scripts/question.js/get_question_by_id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ questionId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        const proxyUrl = `/proxy?url=${encodeURIComponent(data.image)}`;
+        document.getElementById('questionText').innerHTML = `<img src="${proxyUrl}" alt="Question Image"><p>${data.text}</p>`;
+        document.querySelector('.submit-button').setAttribute('data-question-id', questionId);
+        startTime = Date.now();
+      })
+      .catch(error => console.error('Помилка отримання питання:', error));
+
+      fetch('/src/scripts/users.js/api/user')
+        .then(response => response.json())
+        .then(user => {
+          if (user) {
+            const backgroundUrl = `/src/assets/img/background/${user.background}`;
+            fetch(backgroundUrl, { method: 'HEAD' })
+              .then(response => {
+                if (response.ok) {
+                  document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                }
+              })
+              .catch(error => console.error('Помилка завантаження фону:', error));
+          }
+        })
+        .catch(error => console.error('Помилка отримання користувача:', error));
+    });
+
+    function submitAnswer() {
+      const answer = document.getElementById('answerInput').value;
+      const questionId = document.querySelector('.submit-button').getAttribute('data-question-id');
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+      fetch('/src/scripts/question.js/submit_answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          questionId: questionId,
+          answer: answer,
+          timeTaken: timeTaken
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.correct) {
+          location.href = '/src/pages/question/loading_right.html';
+        } else {
+          location.href = '/src/pages/question/loading_wrong.html';
+        }
+      })
+      .catch(error => console.error('Помилка відправлення відповіді:', error));
+    }
+
+    function goBack() {
+      location.href = '../../../index.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Неправильна Відповідь</title>
+  <link rel="stylesheet" href="/src/assets/css/loading_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="container">
+    <img src="/src/assets/img/Wrong.png" alt="Неправильна відповідь" class="icon">
+    <h1>Відповідь не вірна</h1>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/src/scripts/users.js/api/user')
+        .then(response => response.json())
+        .then(user => {
+          if (user) {
+            const backgroundUrl = `/src/assets/img/background/${user.background}`;
+            fetch(backgroundUrl, { method: 'HEAD' })
+              .then(response => {
+                if (response.ok) {
+                  document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                }
+              })
+              .catch(error => console.error('Помилка завантаження фону:', error));
+          }
+        })
+        .catch(error => console.error('Помилка отримання користувача:', error));
+
+      setTimeout(() => {
+        fetch('/src/scripts/question.js/get_random_question')
+          .then(response => response.json())
+          .then(data => {
+            if (!data || !data.id) {
+              window.location.href = '/src/pages/question/completion.html';
+              return;
+            }
+
+            const questionType = data.type;
+            const questionId = data.id;
+            localStorage.setItem('questionId', questionId);
+
+            if (questionType === 1) {
+              window.location.href = '/src/pages/question/question_text.html';
+            } else if (questionType === 2) {
+              window.location.href = '/src/pages/question/question_v4.html';
+            } else if (questionType === 3) {
+              window.location.href = '/src/pages/question/question_v2.html';
+            } else if (questionType === 4) {
+              window.location.href = '/src/pages/question/question_text_img.html';
+            } else if (questionType === 5) {
+              window.location.href = '/src/pages/question/question_v4_img.html';
+            } else if (questionType === 6) {
+              window.location.href = '/src/pages/question/question_v2_img.html';
+            } else {
+              window.location.href = '/src/pages/question/completion.html';
+            }
+          })
+          .catch(error => {
+            console.error('Помилка отримання питання:', error);
+            alert('Помилка отримання питання');
+          });
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

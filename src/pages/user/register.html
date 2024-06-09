@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація</title>
+    <link rel="stylesheet" href="/src/assets/css/register_style.css">
+    <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <h1>Реєстрація</h1>
+        <input type="text" id="name" placeholder="Нік">
+        <br>
+        <input type="password" id="password" placeholder="Пароль">
+        <br>
+        <div id="validation-message" class="validation-message"></div>
+        <div id="success-message" class="success-message"></div>
+        <br>
+        <button onclick="register()">Реєстрація</button>
+        <br>
+        <button class="back-button" onclick="window.location.href='/index.html'">Повернутися</button>
+    </div>
+
+    <script>
+        function register() {
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+            const validationMessage = document.getElementById('validation-message');
+            const successMessage = document.getElementById('success-message');
+
+            validationMessage.textContent = '';
+            successMessage.textContent = '';
+
+            if (name.length < 4) {
+                validationMessage.textContent = "Ім'я повинно містити мінімум 4 символів.";
+                return;
+            }
+
+            if (password.length < 8) {
+                validationMessage.textContent = "Пароль повинен містити мінімум 8 символів.";
+                return;
+            }
+
+            fetch('/src/scripts/users.js/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    successMessage.textContent = 'Реєстрація пройшла успішно!';
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 2000);
+                } else {
+                    validationMessage.textContent = 'Реєстрація не вдалася. Ім\'я вже існує.';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

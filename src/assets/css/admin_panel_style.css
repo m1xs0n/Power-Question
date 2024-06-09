@@ -1,0 +1,61 @@
+body {
+  font-family: Arial, sans-serif;
+  background-image: url('/src/assets/img/background/default_background.png');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  width: 550px;
+  text-align: center;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: linear-gradient(45deg, #4caf50, #3e8e41);
+  color: white;
+  margin: 10px;
+  width: 150px; /* Установка однакової ширини для всіх кнопок */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(45deg, #3e8e41, #4caf50);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+button.nav-button {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+button.nav-button:hover {
+  background: linear-gradient(45deg, #0056b3, #007bff);
+}
+
+button.back {
+  background: linear-gradient(45deg, #f44336, #d32f2f);
+}
+
+button.back:hover {
+  background: linear-gradient(45deg, #d32f2f, #f44336);
+}

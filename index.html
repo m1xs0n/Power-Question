@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профіль</title>
+    <link rel="stylesheet" href="/src/assets/css/index_style.css">
+    <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+    <link rel="icon" href="/src/assets/img/favicon.png" type="image/png">
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons" id="authButtons">
+            <button onclick="window.location.href='src/pages/user/register.html'">Реєстрація</button>
+            <button onclick="window.location.href='src/pages/user/login.html'">Авторизація</button>
+            <span id="moneyDisplay"></span>
+        </div>
+    </div>
+    <div class="profile" id="profile">
+        <img src="" alt="User Avatar" id="profileIcon">
+        <h2 id="profileName"></h2>
+        <p>Рейтинг: <span id="profileRating"></span></p>
+        <p>Рівень: <span id="profileLevel"></span></p>
+        <p>Відповідей: <span id="numberResponses"></span></p> <!-- Нове поле -->
+        <button class="logout-button" onclick="logout()">Вийти</button>
+    </div>
+    <div class="ranking-table" id="rankingTable">
+        <h2>Топ гравців</h2>
+        <ul id="rankingList"></ul>
+    </div>
+    <div class="container">
+        <button onclick="window.location.href='/src/pages/question/loading.html'">Грати</button>
+        <button onclick="window.location.href='/src/pages/user/tutorial.html'">Навчання</button>
+        <button class="admin-button" id="adminButton" onclick="window.location.href='src/pages/admin/admin.html'">Редагувати</button>
+    </div>
+    <img src="/src/assets/img/shop_icon_4.gif" alt="Shop" class="shop-button" id="shopButton" onclick="window.location.href='/src/pages/user/shop.html'">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUserData();
+            fetchTopPlayers();
+            setInterval(fetchUserData, 60000); // Оновлення даних користувача кожні 60 секунд
+        });
+
+        function fetchUserData() {
+            fetch('/src/scripts/users.js/api/user')
+                .then(response => response.json())
+                .then(user => {
+                    if (user) {
+                        document.getElementById('authButtons').style.display = 'none';
+                        document.getElementById('profile').style.display = 'flex';
+
+                        const iconUrl = `/src/assets/img/icon/${user.icon}`;
+                        const defaultIconUrl = '/src/assets/img/icon/icon_1.png';
+
+                        fetch(iconUrl, { method: 'HEAD' })
+                            .then(response => {
+                                if (response.ok) {
+                                    document.getElementById('profileIcon').src = iconUrl;
+                                } else {
+                                    document.getElementById('profileIcon').src = defaultIconUrl;
+                                }
+                            })
+                            .catch(() => {
+                                document.getElementById('profileIcon').src = defaultIconUrl;
+                            });
+
+                        document.getElementById('profileName').textContent = user.name;
+                        document.getElementById('profileRating').textContent = user.rating;
+                        document.getElementById('profileLevel').textContent = user.level;
+                        document.getElementById('numberResponses').textContent = user.number_responses; // Відображення number_responses
+                        document.getElementById('moneyDisplay').textContent = `Money: ${user.money}`;
+                        document.getElementById('shopButton').style.display = 'block';
+
+                        const backgroundUrl = `/src/assets/img/background/${user.background}`;
+                        fetch(backgroundUrl, { method: 'HEAD' })
+                            .then(response => {
+                                if (response.ok) {
+                                    document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                                }
+                            })
+                            .catch(error => console.error('Error loading background:', error));
+
+                        const username = user.name;
+                        fetch(`/src/scripts/users.js/api/check_admin_by_username/${username}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.isAdmin) {
+                                    document.getElementById('adminButton').style.display = 'block';
+                                }
+                            })
+                            .catch(error => console.error('Error checking admin status:', error));
+                    } else {
+                        document.getElementById('authButtons').style.display = 'flex';
+                    }
+                })
+                .catch(error => console.error('Error fetching user data:', error));
+        }
+
+        function fetchTopPlayers() {
+            fetch('/src/scripts/users.js/api/top_players')
+                .then(response => response.json())
+                .then(players => {
+                    const rankingList = document.getElementById('rankingList');
+                    rankingList.innerHTML = ''; // Очищення існуючих елементів списку
+                    players.forEach(player => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <img src="/src/assets/img/icon/${player.icon}" onerror="this.onerror=null;this.src='/src/assets/img/icon/default_icon.png';" alt="${player.name}">
+                            <span>${player.name}</span> - ${player.rating} Рейтинг
+                        `;
+                        rankingList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching top players:', error));
+        }
+
+        function logout() {
+            fetch('/src/scripts/users.js/api/logout')
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = 'index.html';
+                    }
+                })
+                .catch(error => console.error('Error logging out:', error));
+        }
+    </script>
+</body>
+</html>

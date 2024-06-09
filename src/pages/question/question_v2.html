@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Гра</title>
+  <link rel="stylesheet" href="/src/assets/css/question_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="container">
+    <div class="question-text" id="questionText"></div>
+    <div class="button-container">
+      <button class="answer-button yellow" id="answerButton1" onclick="submitAnswer('v1')"></button>
+      <button class="answer-button blue" id="answerButton2" onclick="submitAnswer('v2')"></button>
+    </div>
+    <button class="back-button" onclick="goBack()">Назад</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const questionId = localStorage.getItem('questionId');
+      fetch('/src/scripts/question.js/get_question_by_id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ questionId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('questionText').textContent = data.text;
+        document.getElementById('answerButton1').textContent = data.v1;
+        document.getElementById('answerButton2').textContent = data.v2;
+
+        document.querySelectorAll('.answer-button').forEach(button => {
+          button.setAttribute('data-question-id', questionId);
+        });
+      })
+      .catch(error => console.error('Помилка отримання питання:', error));
+
+      fetch('/src/scripts/users.js/api/user')
+        .then(response => response.json())
+        .then(user => {
+          if (user) {
+            const backgroundUrl = `/src/assets/img/background/${user.background}`;
+            fetch(backgroundUrl, { method: 'HEAD' })
+              .then(response => {
+                if (response.ok) {
+                  document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                }
+              })
+              .catch(error => console.error('Помилка завантаження фону:', error));
+          }
+        })
+        .catch(error => console.error('Помилка отримання користувача:', error));
+    });
+
+    function submitAnswer(answerKey) {
+      const answer = document.getElementById(`answerButton${answerKey[1]}`).textContent;
+      const questionId = document.querySelector('.answer-button').getAttribute('data-question-id');
+
+      fetch('/src/scripts/question.js/submit_answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          questionId: questionId,
+          answer: answer
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.correct) {
+          location.href = '/src/pages/question/loading_right.html';
+        } else {
+          location.href = '/src/pages/question/loading_wrong.html';
+        }
+      })
+      .catch(error => console.error('Помилка відправлення відповіді:', error));
+    }
+
+    function goBack() {
+      location.href = '../../../index.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизація</title>
+    <link rel="stylesheet" href="/src/assets/css/login_style.css">
+    <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <h1>Авторизація</h1>
+        <input type="text" id="name" placeholder="Нік">
+        <br>
+        <input type="password" id="password" placeholder="Пароль">
+        <br>
+        <div id="validation-message" class="validation-message"></div>
+        <div id="success-message" class="success-message"></div>
+        <br>
+        <button onclick="login()">Авторизація</button>
+        <br>
+        <button class="back-button" onclick="window.location.href='../../../index.html'">Повернутися</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/src/scripts/users.js/api/user')
+                .then(response => response.json())
+                .then(user => {
+                    if (user) {
+                        const backgroundUrl = `/assets/img/background/${user.background}`;
+                        fetch(backgroundUrl, { method: 'HEAD' })
+                            .then(response => {
+                                if (response.ok) {
+                                    document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                                }
+                            })
+                            .catch(error => console.error('Помилка завантаження фону:', error));
+                    }
+                })
+                .catch(error => console.error('Error fetching user:', error));
+        });
+
+        function login() {
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+            const validationMessage = document.getElementById('validation-message');
+            const successMessage = document.getElementById('success-message');
+
+            validationMessage.textContent = '';
+            successMessage.textContent = '';
+
+            if (name.length < 4) {
+                validationMessage.textContent = 'Нік повинен містити мінімум 4 символів.';
+                return;
+            }
+
+            if (password.length < 8) {
+                validationMessage.textContent = 'Пароль повинен містити мінімум 8 символів.';
+                return;
+            }
+
+            fetch('/src/scripts/users.js/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    successMessage.textContent = 'Авторизація пройшла успішно!';
+                    setTimeout(() => {
+                        window.location.href = '../../../index.html';
+                    }, 2000);
+                } else {
+                    validationMessage.textContent = 'Помилка: Користувача не знайдено або неправильні дані авторизації.';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Запитання</title>
+  <link rel="stylesheet" href="/src/assets/css/admin_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="fixed-header">
+    <button class="nav-button" onclick="location.href='admin.html'">Повернутися</button>
+    <button class="add-button" onclick="resetForm(); showForm()">Додати</button>
+  </div>
+  <div class="container">
+    <div class="form-container" id="questionForm">
+      <h2>Add/Edit Question</h2>
+      <input type="hidden" id="questionId">
+      <input type="text" id="questionText" placeholder="Question Text">
+      <input type="text" id="questionImage" placeholder="Image URL" style="display: none;">
+      <input type="text" id="questionV1" placeholder="Option 1" style="display: none;">
+      <input type="text" id="questionV2" placeholder="Option 2" style="display: none;">
+      <input type="text" id="questionV3" placeholder="Option 3" style="display: none;">
+      <input type="text" id="questionV4" placeholder="Option 4" style="display: none;">
+      <input type="text" id="questionAnswer" placeholder="Answer">
+      <select id="questionType" onchange="handleTypeChange()">
+        <option value="1">Text Question</option>
+        <option value="2">Text Question with 4 Buttons</option>
+        <option value="3">Text Question with 2 Buttons</option>
+        <option value="4">Text and Image Question</option>
+        <option value="5">Text and Image Question with 4 Buttons</option>
+        <option value="6">Text and Image Question with 2 Buttons</option>
+      </select>
+      <button onclick="submitQuestion()">Надіслати</button>
+      <button onclick="hideForm()">Скасувати</button>
+    </div>
+
+    <!-- Пошук та сортування -->
+    <div class="search-sort-container">
+      <input type="text" id="searchInput" placeholder="Пошук...">
+      <select id="sortSelect">
+        <option value="id">ID</option>
+        <option value="text">Question</option>
+        <option value="answer">Answer</option>
+        <option value="type">Type</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table id="questionsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Question</th>
+            <th>Image</th>
+            <th>Option 1</th>
+            <th>Option 2</th>
+            <th>Option 3</th>
+            <th>Option 4</th>
+            <th>Answer</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadQuestions();
+      document.getElementById('searchInput').addEventListener('input', filterAndSortQuestions);
+      document.getElementById('sortSelect').addEventListener('change', filterAndSortQuestions);
+    });
+
+    function loadQuestions() {
+      fetch('/src/scripts/admins.js/api/questions')
+        .then(response => response.json())
+        .then(data => {
+          displayQuestions(data);
+        })
+        .catch(error => console.error('Error loading questions:', error));
+    }
+
+    function displayQuestions(data) {
+      const tbody = document.querySelector('#questionsTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(question => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${question.id}</td>
+          <td>${question.text}</td>
+          <td>${question.image || ''}</td>
+          <td>${question.v1 || ''}</td>
+          <td>${question.v2 || ''}</td>
+          <td>${question.v3 || ''}</td>
+          <td>${question.v4 || ''}</td>
+          <td>${question.answer}</td>
+          <td>${question.type}</td>
+          <td class="actions">
+            <button onclick="editQuestion(${question.id})">Edit</button>
+            <button onclick="deleteQuestion(${question.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterAndSortQuestions() {
+      const searchValue = document.getElementById('searchInput').value.toLowerCase();
+      const sortValue = document.getElementById('sortSelect').value;
+
+      fetch('/src/scripts/admins.js/api/questions')
+        .then(response => response.json())
+        .then(data => {
+          // Фільтрування
+          const filteredData = data.filter(question => {
+            return question.text.toLowerCase().includes(searchValue) ||
+                   question.answer.toLowerCase().includes(searchValue) ||
+                   (question.image && question.image.toLowerCase().includes(searchValue)) ||
+                   (question.v1 && question.v1.toLowerCase().includes(searchValue)) ||
+                   (question.v2 && question.v2.toLowerCase().includes(searchValue)) ||
+                   (question.v3 && question.v3.toLowerCase().includes(searchValue)) ||
+                   (question.v4 && question.v4.toLowerCase().includes(searchValue));
+          });
+
+          // Сортування
+          filteredData.sort((a, b) => {
+            if (a[sortValue] < b[sortValue]) return -1;
+            if (a[sortValue] > b[sortValue]) return 1;
+            return 0;
+          });
+
+          displayQuestions(filteredData);
+        })
+        .catch(error => console.error('Error filtering and sorting questions:', error));
+    }
+
+    function showForm() {
+      document.getElementById('questionForm').style.display = 'flex';
+      handleTypeChange();
+      window.scrollTo(0, 0);
+    }
+
+    function hideForm() {
+      document.getElementById('questionForm').style.display = 'none';
+    }
+
+    function handleTypeChange() {
+      const type = document.getElementById('questionType').value;
+      document.getElementById('questionImage').style.display = type >= 4 ? 'block' : 'none';
+      document.getElementById('questionV1').style.display = [2, 3, 5, 6].includes(parseInt(type)) ? 'block' : 'none';
+      document.getElementById('questionV2').style.display = [2, 3, 5, 6].includes(parseInt(type)) ? 'block' : 'none';
+      document.getElementById('questionV3').style.display = [2, 5].includes(parseInt(type)) ? 'block' : 'none';
+      document.getElementById('questionV4').style.display = [2, 5].includes(parseInt(type)) ? 'block' : 'none';
+    }
+
+    function submitQuestion() {
+      const id = document.getElementById('questionId').value;
+      const text = document.getElementById('questionText').value;
+      const image = document.getElementById('questionImage').value;
+      const v1 = document.getElementById('questionV1').value;
+      const v2 = document.getElementById('questionV2').value;
+      const v3 = document.getElementById('questionV3').value;
+      const v4 = document.getElementById('questionV4').value;
+      const answer = document.getElementById('questionAnswer').value;
+      const type = document.getElementById('questionType').value;
+
+      const payload = { text, image, v1, v2, v3, v4, answer, type };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/src/scripts/admins.js/api/questions/${id}` : '/src/scripts/admins.js/api/questions';
+
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(() => {
+          loadQuestions();
+          hideForm();
+        })
+        .catch(error => console.error('Error submitting question:', error));
+    }
+    function resetForm() {
+  document.getElementById('questionId').value = '';
+  document.getElementById('questionText').value = '';
+  document.getElementById('questionImage').value = '';
+  document.getElementById('questionV1').value = '';
+  document.getElementById('questionV2').value = '';
+  document.getElementById('questionV3').value = '';
+  document.getElementById('questionV4').value = '';
+  document.getElementById('questionAnswer').value = '';
+  document.getElementById('questionType').value = '1';
+  handleTypeChange();
+}
+
+
+    function editQuestion(id) {
+      fetch(`/src/scripts/admins.js/api/questions/${id}`)
+        .then(response => response.json())
+        .then(data => {
+          fillFormWithData(data);
+          showForm();
+        })
+        .catch(error => console.error('Error editing question:', error));
+    }
+
+    function fillFormWithData(data) {
+      document.getElementById('questionId').value = data.id;
+      document.getElementById('questionText').value = data.text;
+      document.getElementById('questionImage').value = data.image || '';
+      document.getElementById('questionV1').value = data.v1 || '';
+      document.getElementById('questionV2').value = data.v2 || '';
+      document.getElementById('questionV3').value = data.v3 || '';
+      document.getElementById('questionV4').value = data.v4 || '';
+      document.getElementById('questionAnswer').value = data.answer;
+      document.getElementById('questionType').value = data.type;
+      handleTypeChange();
+    }
+
+    function deleteQuestion(id) {
+      if (confirm('Are you sure you want to delete this question?')) {
+        fetch(`/src/scripts/admins.js/api/questions/${id}`, {
+          method: 'DELETE'
+        })
+          .then(() => {
+            loadQuestions();
+          })
+          .catch(error => console.error('Error deleting question:', error));
+      }
+    }
+  </script>
+</body>
+</html>

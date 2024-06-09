@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Усі питання завершено</title>
+  <link rel="stylesheet" href="/src/assets/css/completion_style.css">
+  <link rel="shortcut icon" href="/src/assets/img/favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="completion-container">
+    <div class="completion-content">
+      <h1>Вітаємо!</h1>
+      <p>Ви відповіли на всі питання.</p>
+      <button id="redirect-button" class="nav-button">Повернутися на головну сторінку</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/src/scripts/users.js/api/user')
+        .then(response => response.json())
+        .then(user => {
+          if (user) {
+            const backgroundUrl = `/src/assets/img/background/${user.background}`;
+            fetch(backgroundUrl, { method: 'HEAD' })
+              .then(response => {
+                if (response.ok) {
+                  document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+                }
+              })
+              .catch(error => console.error('Помилка завантаження фону:', error));
+          }
+        })
+        .catch(error => console.error('Помилка отримання користувача:', error));
+
+      document.getElementById('redirect-button').addEventListener('click', () => {
+        window.location.href = '../../../index.html';
+      });
+
+      setTimeout(() => {
+        window.location.href = '../../../index.html';
+      }, 10000); // Автоматичне перенаправлення через 10 секунд
+    });
+  </script>
+</body>
+</html>

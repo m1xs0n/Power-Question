@@ -1,0 +1,252 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('/src/assets/img/background/default_background.png'); /* Default background */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.header {
+    position: absolute;
+    top: 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 200px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+input {
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.profile {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 200px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.profile h2 {
+    margin: 10px 0 5px;
+}
+
+.profile p {
+    margin: 5px 0;
+}
+
+.ranking-table {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-table h2 {
+    margin-top: 0;
+}
+
+.ranking-table ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ranking-table li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ranking-table li img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.logout-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.shop-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: none;
+}
+
+.admin-button {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Media queries for mobile devices */
+@media (max-width: 900px) {
+    .container {
+        width: 90%;
+        height: auto;
+        padding: 15px;
+    }
+
+    .profile {
+        width: 90%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .ranking-table {
+        width: 90%;
+        right: 50%;
+        transform: translateX(50%);
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    input {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .header-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .shop-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-button {
+        font-size: 14px;
+        padding: 8px;
+    }
+    
+    /* Media queries for mobile devices */
+@media (max-width: 900px), (max-height: 900px){
+    .container {
+        width: 90%;
+        height: auto;
+        padding: 15px;
+    }
+
+    .profile {
+        width: 90%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .ranking-table {
+        display: none; /* Приховати топ 10 гравців на мобільних пристроях */
+        width: 90%;
+        right: 50%;
+        transform: translateX(50%);
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    input {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .header-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .shop-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+}
